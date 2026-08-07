@@ -1,0 +1,194 @@
+## NativeIconTextBox
+Native text box with mappable leading and trailing icons
+
+## Features
+A text input for native pages that can carry an icon before the text, after it, or both.
+Mendix's own Text Box has no icon support — its styling exposes only text and container
+properties — so this widget fills that gap.
+
+The icons are mapped per instance, so the same widget covers a search field, a field with a
+clear button, a validated field with a status glyph, a password field with a reveal toggle,
+and so on.
+
+* Leading and trailing icon slots, each optional
+* Either icon can trigger an action, or stay purely decorative
+* Icon size and colour tuned independently per side
+* Full control of the input's type scale and spacing through styling
+* Works offline, on both iOS and Android
+
+## Requirements
+Studio Pro **11.12** or higher. Built against Mendix Pluggable Widgets Tools 11.12
+(React 19, React Native 0.84).
+
+## Usage
+Download one of the [releases](https://github.com/Entidad/mendix-react-native-icontextbox/releases)
+or build from source as follows
+
+```
+git clone https://github.com/Entidad/mendix-react-native-icontextbox.git
+cd ./mendix-react-native-icontextbox
+npm install
+npm run build
+```
+
+Deploy `entidad.io.native.NativeIconTextBox.mpk` to `$PROJ/widgets`, then run
+`Synchronize App Directory` in Studio Pro (`F4`, or `Menu / App / Synchronize App Directory`).
+
+The widget needs an entity context, so place it inside a **Data view** or a **List view** row.
+
+### Properties
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `value` | String attribute | yes | Holds the entered text. Written on every keystroke. |
+| `placeholder` | Text template | no | Hint shown while the value is empty. Translatable. |
+| `returnKeyType` | Enum or String attribute | no | Label on the keyboard's return key. Falls back to `Done` when empty or unrecognised. |
+| `leftIcon` | Icon | no | Icon shown before the text. |
+| `rightIcon` | Icon | no | Icon shown after the text. |
+| `onChangeAction` | Action | no | Runs on every keystroke. |
+| `onLeaveAction` | Action | no | Runs once when the field loses focus. |
+| `onEnterAction` | Action | no | Runs when the keyboard return key is pressed. |
+| `onLeftIconClick` | Action | no | Makes the leading icon tappable. |
+| `onRightIconClick` | Action | no | Makes the trailing icon tappable. |
+
+The standard **Editability** property is supported. A read-only attribute renders a
+non-editable input.
+
+### Behaviour
+
+**The attribute is written before the action runs**, so a nanoflow triggered by
+`onChangeAction` reads the text just typed rather than the previous value.
+
+**An icon is only tappable when its action is configured.** Without one it is decorative and
+taps fall through to the input, so tapping anywhere in the field still focuses it. Add an
+action and that icon becomes its own touch target.
+
+**`onChangeAction` fires on every keystroke.** Typing a six-letter word runs the nanoflow six
+times, which suits live filtering of a list already in memory but is wasteful when the action
+queries a database or a service.
+
+For those, use one of the single-shot events instead. **`onLeaveAction` runs once when the
+field loses focus** — the same moment Mendix's own Text Box fires its On change — and
+**`onEnterAction` runs when the return key is pressed**. Wiring both covers the user who
+submits from the keyboard and the user who simply taps elsewhere.
+
+**`returnKeyType` only labels the key, it does not change behaviour.** Whichever label you
+pick, pressing the key fires `onEnterAction`. Set it to `Search` for a search field and
+`Next` where the user moves on to another field — the label is a cue about what will happen,
+so it should match what your action actually does.
+
+**The return key is set at runtime from an attribute.** Map either an enumeration attribute
+or a plain String. Matching ignores casing and surrounding spaces, and Spanish names are
+accepted alongside the English ones, so an enumeration modelled in either language maps
+straight through:
+
+| Return key | Accepted value names |
+| --- | --- |
+| Done | `Done`, `Listo` |
+| Go | `Go`, `Ir` |
+| Next | `Next`, `Siguiente` |
+| Search | `Search`, `Buscar` |
+| Send | `Send`, `Enviar` |
+
+Prefer the English names where you have the choice. A Mendix enumeration's value **Name** is
+a technical identifier and its **Caption** is the translated part, so `Name: Search` with
+`Caption (es_ES): Buscar` keeps the model readable in any language. The Spanish aliases exist
+for enumerations already modelled that way.
+
+Anything else — an empty attribute, an unmapped property, a value such as `Yahoo` that only
+one platform supports — falls back to `Done` rather than reaching the input, where an invalid
+name would leave the key unlabelled.
+
+**The caption is not what appears on the key.** The label is drawn by the operating system in
+the *device's* language, from the value alone. A device set to Spanish shows `Buscar` for
+`Search` whatever caption you gave the enumeration value; captions only matter where you
+surface the choice to a user yourself.
+
+**Icons render only when mapped.** An unmapped slot takes no space at all, so the same class
+works whether or not an icon is present.
+
+### Styling
+
+The widget reads five style keys:
+
+| Key | Applied to |
+| --- | --- |
+| `container` | the row wrapping the icons and the input |
+| `input` | the text input |
+| `leftIcon` | the leading icon |
+| `rightIcon` | the trailing icon |
+| `placeholderTextColor` | its `color` sets the placeholder colour |
+
+**Icon size comes from `fontSize`,** matching how Mendix sizes icons elsewhere, so icons and
+text scale on the same numbers. The two sides are separate keys, so a small leading search
+glyph can sit beside a larger trailing clear button. If a key omits `fontSize` the icon falls
+back to 20 rather than disappearing.
+
+Any other property on `leftIcon`/`rightIcon` — `marginRight`, `padding` and so on — is applied
+to the wrapper around the glyph, so spacing is set in the same place as size.
+
+**Larger text and spacing** are controlled from `input` and `container`. Raise `input.fontSize`
+for type scale, `input.paddingVertical` for field height, and `container.paddingHorizontal`
+for the gap between the border and its contents.
+
+Class names may contain only letters and numbers — following Mendix convention, a custom
+class is lowerCamelCase.
+
+Export the class from `theme/native/main.js`, then enter its name in the widget's
+**Class** property in Studio Pro. **Styling has no effect until that property is set.**
+
+```
+export const customSearchBox={
+        container:{
+                borderWidth:1,
+                borderColor:"#CED0D3",
+                borderRadius:8,
+                backgroundColor:"#FFFFFF",
+                paddingHorizontal:16,
+        },
+        input:{
+                flex:1,
+                fontSize:18,
+                paddingVertical:16,
+                color:"#0A1325",
+        },
+        leftIcon:{
+                fontSize:22,
+                color:"#6C717C",
+                marginRight:12,
+        },
+        rightIcon:{
+                fontSize:18,
+                color:"#6C717C",
+                marginLeft:12,
+        },
+        placeholderTextColor:{
+                color:"#9DA1A8",
+        },
+};
+```
+
+Keep `flex:1` on `input`. It is what lets the text fill the space left over by the icons;
+without it the input collapses.
+
+## Demo project
+None at this time
+
+## Issues, suggestions and feature requests
+[GitHub](https://github.com/Entidad/mendix-react-native-icontextbox/issues)
+
+## Development and contribution
+
+1. Install NPM package dependencies by using: `npm install`. Node 20.19.4 or higher is required.
+1. Run `npm start` to watch for code changes. On every change:
+    - the widget will be bundled;
+    - the bundle will be included in a `dist` folder in the root directory of the project;
+    - the bundle will be included in the `deployment` and `widgets` folder of the Mendix test project.
+
+Contributions welcome
+
+## References
+
+* [https://docs.mendix.com/refguide/mobile/designing-mobile-user-interfaces/widget-styling-guide/#text-box](https://docs.mendix.com/refguide/mobile/designing-mobile-user-interfaces/widget-styling-guide/#text-box)
+* [https://reactnative.dev/docs/textinput](https://reactnative.dev/docs/textinput)
+* [https://docs.mendix.com/apidocs-mxsdk/apidocs/pluggable-widgets-property-types/](https://docs.mendix.com/apidocs-mxsdk/apidocs/pluggable-widgets-property-types/)
