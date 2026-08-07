@@ -1,0 +1,40 @@
+{
+  "name": "icontextbox",
+  "widgetName": "NativeIconTextBox",
+  "version": "1.0.0",
+  "description": "Native text box with mappable leading and trailing icons",
+  "copyright": "© 2021-2026 Entidad. All Rights Reserved.",
+  "author": "Jorge Flores",
+  "engines": {
+    "node": ">=20.19.4"
+  },
+  "license": "Apache-2.0",
+  "config": {
+    "projectPath": "./test/"
+  },
+  "packagePath": "entidad.io.native",
+  "scripts": {
+    "start": "pluggable-widgets-tools start:native",
+    "build": "pluggable-widgets-tools build:native",
+    "lint": "pluggable-widgets-tools lint",
+    "lint:fix": "pluggable-widgets-tools lint:fix",
+    "prerelease": "npm run lint",
+    "release": "pluggable-widgets-tools release:native"
+  },
+  "bugs": {
+    "url": "https://github.com/Entidad/mendix-react-native-icontextbox/issues"
+  },
+  "devDependencies": {
+    "@mendix/pluggable-widgets-tools": "^11.12.0"
+  },
+  "resolutions": {
+    "react": "^19.2.0",
+    "@types/react": "^19.0.0",
+    "react-native": "0.84.1"
+  },
+  "overrides": {
+    "react": "^19.2.0",
+    "@types/react": "^19.0.0",
+    "react-native": "0.84.1"
+  }
+}
