@@ -167,36 +167,101 @@ Export the class from `theme/native/main.js`, then enter its name in the widget'
 ```
 export const customSearchBox={
         container:{
-                borderWidth:1,
-                borderColor:"#CED0D3",
-                borderRadius:8,
-                backgroundColor:"#FFFFFF",
+                flexDirection:"row",
+                alignItems:"center",
                 paddingHorizontal:16,
+                borderRadius:8,
+                borderWidth:1,
+                borderColor:"#CCCCCC",
+                backgroundColor:"#FCFCFC",
         },
         input:{
                 flex:1,
-                fontSize:18,
-                paddingVertical:16,
-                color:"#0A1325",
-        },
-        leftIcon:{
-                fontSize:22,
-                color:"#6C717C",
-                marginRight:12,
+                fontSize:16,
+                paddingVertical:12,
+                color:"#5F3A3A",
         },
         rightIcon:{
-                fontSize:18,
-                color:"#6C717C",
-                marginLeft:12,
+                fontSize:20,
+                color:"#808080",
+                marginLeft:16,
         },
         placeholderTextColor:{
-                color:"#9DA1A8",
+                color:"#808080",
         },
 };
 ```
 
 Keep `flex:1` on `input`. It is what lets the text fill the space left over by the icons;
 without it the input collapses.
+
+Note that the typed text and the placeholder use different colours. Giving both the same
+value makes an empty field indistinguishable from a filled one at a glance, which is
+particularly confusing in a composer where a placeholder can read as a drafted message.
+
+### A chat composer
+
+A multiline field with a pill outline, an attachment icon leading and a send icon trailing.
+This one has been checked on device.
+
+```
+export const customChatComposer={
+        container:{
+                flexDirection:"row",
+                alignItems:"flex-end",
+                minHeight:48,
+                borderRadius:999,
+                paddingHorizontal:20,
+                paddingVertical:8,
+                borderWidth:1,
+                borderColor:"#CCCCCC",
+                backgroundColor:"#FCFCFC",
+        },
+        input:{
+                flex:1,
+                fontSize:16,
+                lineHeight:22,
+                maxHeight:96,
+                paddingVertical:4,
+                includeFontPadding:false,
+                color:"#5F3A3A",
+        },
+        leftIcon:{
+                fontSize:22,
+                color:"#808080",
+                marginRight:16,
+                marginBottom:4,
+        },
+        rightIcon:{
+                fontSize:22,
+                color:"#191919",
+                marginLeft:16,
+                marginBottom:4,
+        },
+        placeholderTextColor:{
+                color:"#808080",
+        },
+};
+```
+
+Four details in there are worth understanding rather than copying blindly.
+
+**`borderRadius:999` keeps the ends round at any height.** React Native clamps the radius to
+half the rendered dimension, so a large number stays a true pill as a multiline field grows.
+A fixed `24` looks right at 48pt tall and progressively less so at 70 or 90.
+
+**`lineHeight` is set explicitly, and `maxHeight` is a multiple of it.** Without a line height
+each platform derives one from font metrics, so the same message occupies different heights on
+iOS and Android and wrapped lines sit unevenly. With `lineHeight:22` and `paddingVertical:4`,
+`maxHeight:96` is exactly four lines plus padding, so the field clips on a line boundary
+instead of part way through a line. Five lines is `118`, three is `74`.
+
+**`alignItems:"flex-end"` pins the icons to the bottom** as the field grows, which is where a
+send button belongs. The `marginBottom:4` on each icon is optical alignment against the last
+line of text — worth adjusting to your font.
+
+**`includeFontPadding:false`** removes the extra padding Android adds inside a text input,
+which otherwise makes the field taller than iOS for the same content.
 
 ## Demo project
 None at this time
