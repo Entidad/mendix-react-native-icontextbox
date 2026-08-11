@@ -60,12 +60,19 @@ export class NativeIconTextBoxComponent extends Component{
 		//taps meant for the input.
 		return onClick!=null?<Pressable onPress={onClick}>{glyph}</Pressable>:glyph;
 	}
+	//Android centres multiline text vertically by default, which leaves the first line adrift
+	//in a field that has room to grow. Anchoring to the top makes it fill downwards instead.
+	inputStyle(){
+		if(!this.props.multiline)return this.styles.input;
+		return[this.styles.input,{textAlignVertical:"top"}];
+	}
 	render(){
 		return(
 			<View style={this.styles.container}>
 				{this.renderIcon(this.props.leftIcon,this.styles.leftIcon,this.props.onLeftIconClick)}
 				<TextInput
-					style={this.styles.input}
+					style={this.inputStyle()}
+					multiline={this.props.multiline}
 					value={this.props.value}
 					placeholder={this.props.placeholder}
 					placeholderTextColor={this.styles.placeholderTextColor.color}

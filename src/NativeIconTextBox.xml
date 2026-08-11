@@ -19,6 +19,10 @@
 				<caption>Placeholder</caption>
 				<description>Hint shown while the value is empty</description>
 			</property>
+			<property key="multiline" type="boolean" required="true" defaultValue="false">
+				<caption>Multiline</caption>
+				<description>Let the text wrap and the field grow. Cap the growth with maxHeight in styling. The return key inserts a newline instead of firing On submit.</description>
+			</property>
 			<property key="returnKeyType" type="attribute" required="false">
 				<caption>Return key</caption>
 				<description>Label on the keyboard's return key. Accepts Done, Go, Next, Search or Send, or their Spanish equivalents Listo, Ir, Siguiente, Buscar and Enviar, in any casing. Falls back to Done when empty or unrecognised.</description>

@@ -66,6 +66,7 @@ export class NativeIconTextBox extends Component{
 				value={value&&value.status=="available"&&value.value!=null?value.value:""}
 				placeholder={this.resolve(this.props.placeholder)}
 				editable={!(value==null||value.readOnly)}
+				multiline={this.props.multiline===true}
 				returnKeyType={this.getReturnKeyType()}
 				leftIcon={this.resolve(this.props.leftIcon)}
 				rightIcon={this.resolve(this.props.rightIcon)}

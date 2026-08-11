@@ -20,6 +20,12 @@ and so on.
 Studio Pro **11.12** or higher. Built against Mendix Pluggable Widgets Tools 11.12
 (React 19, React Native 0.84).
 
+## Version history
+
+**1.1.0** — added the `multiline` property and the On leave event.
+
+**1.0.0** — initial release.
+
 ## Usage
 Download one of the [releases](https://github.com/Entidad/mendix-react-native-icontextbox/releases)
 or build from source as follows
@@ -42,6 +48,7 @@ The widget needs an entity context, so place it inside a **Data view** or a **Li
 | --- | --- | --- | --- |
 | `value` | String attribute | yes | Holds the entered text. Written on every keystroke. |
 | `placeholder` | Text template | no | Hint shown while the value is empty. Translatable. |
+| `multiline` | Boolean | yes (default `false`) | Let the text wrap and the field grow. |
 | `returnKeyType` | Enum or String attribute | no | Label on the keyboard's return key. Falls back to `Done` when empty or unrecognised. |
 | `leftIcon` | Icon | no | Icon shown before the text. |
 | `rightIcon` | Icon | no | Icon shown after the text. |
@@ -103,6 +110,26 @@ name would leave the key unlabelled.
 the *device's* language, from the value alone. A device set to Spanish shows `Buscar` for
 `Search` whatever caption you gave the enumeration value; captions only matter where you
 surface the choice to a user yourself.
+
+**Multiline changes what the return key does.** With `multiline` on, pressing return inserts
+a newline and `onEnterAction` no longer fires — that is React Native behaviour, not a widget
+limitation. Give the field a trailing icon wired to `onRightIconClick` so there is still a
+way to submit.
+
+A multiline field also needs different styling. Swap the fixed `height` on `container` for
+`minHeight` so it can grow, set `alignItems` to `flex-end` so the icons stay pinned to the
+bottom as it does, and cap the growth with `maxHeight` on `input`:
+
+```
+container:{
+        minHeight:48,
+        alignItems:"flex-end",
+        paddingVertical:8,
+},
+input:{
+        maxHeight:120,
+},
+```
 
 **Icons render only when mapped.** An unmapped slot takes no space at all, so the same class
 works whether or not an icon is present.
