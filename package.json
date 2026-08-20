@@ -10,7 +10,7 @@
   },
   "license": "Apache-2.0",
   "config": {
-    "projectPath": "./test/"
+    "projectPath": "./test/NativeIconTextBoxTestApp"
   },
   "packagePath": "entidad.io.native",
   "scripts": {
