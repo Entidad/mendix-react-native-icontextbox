@@ -1,5 +1,15 @@
 import{Component}from"react";
 import{NativeIconTextBoxComponent}from"./components/NativeIconTextBoxComponent";
+//Enumeration keys must be identifiers, so the camelCase keys are mapped to the hyphenated
+//names React Native's TextInput expects.
+const KEYBOARD_TYPES={
+	numberPad:"number-pad",
+	decimalPad:"decimal-pad",
+	emailAddress:"email-address",
+	phonePad:"phone-pad",
+	url:"url",
+	default:"default",
+};
 //React Native accepts only five return key names on both platforms. Spanish names are
 //accepted as aliases so an enumeration modelled in Spanish maps without a translation step.
 const RETURN_KEYS={
@@ -16,6 +26,7 @@ export class NativeIconTextBox extends Component{
 		this.onChangeText=this.onChangeText.bind(this);
 		this.onSubmit=this.onSubmit.bind(this);
 		this.onLeave=this.onLeave.bind(this);
+		this.onFocus=this.onFocus.bind(this);
 		this.onLeftIconClick=this.onLeftIconClick.bind(this);
 		this.onRightIconClick=this.onRightIconClick.bind(this);
 	}
@@ -29,12 +40,18 @@ export class NativeIconTextBox extends Component{
 	onChangeText(text){
 		const value=this.props.value;
 		if(!value||value.status!="available"||value.readOnly)return;
+		//setTextValue hands the raw text to the attribute's own formatter, so the platform
+		//does the parsing and locale handling and raises a validation message when the text
+		//does not parse. That is what lets a Decimal or Integer attribute be bound here.
 		//The attribute is written before the action runs, so a nanoflow reads the new text.
-		value.setValue(text);
+		value.setTextValue(text);
 		this.execute(this.props.onChangeAction);
 	}
 	onSubmit(){
-		this.execute(this.props.onEnterAction);
+		this.execute(this.props.onSubmitAction);
+	}
+	onFocus(){
+		this.execute(this.props.onFocusAction);
 	}
 	onLeave(){
 		this.execute(this.props.onLeaveAction);
@@ -59,20 +76,27 @@ export class NativeIconTextBox extends Component{
 		const key=String(value).trim().toLowerCase();
 		return Object.prototype.hasOwnProperty.call(RETURN_KEYS,key)?RETURN_KEYS[key]:DEFAULT_RETURN_KEY;
 	}
+	//hasOwnProperty keeps inherited names like "constructor" from resolving to a function.
+	getKeyboardType(){
+		const key=this.props.keyboardType;
+		return key!=null&&Object.prototype.hasOwnProperty.call(KEYBOARD_TYPES,key)?KEYBOARD_TYPES[key]:"default";
+	}
 	render(){
 		const value=this.props.value;
 		return(
 			<NativeIconTextBoxComponent
-				value={value&&value.status=="available"&&value.value!=null?value.value:""}
+				value={value&&value.status=="available"?value.displayValue||"":""}
 				placeholder={this.resolve(this.props.placeholder)}
 				editable={!(value==null||value.readOnly)}
 				multiline={this.props.multiline===true}
+				keyboardType={this.getKeyboardType()}
 				returnKeyType={this.getReturnKeyType()}
 				leftIcon={this.resolve(this.props.leftIcon)}
 				rightIcon={this.resolve(this.props.rightIcon)}
 				onChangeText={this.onChangeText}
 				onSubmit={this.onSubmit}
 				onLeave={this.onLeave}
+				onEnter={this.onFocus}
 				onLeftIconClick={this.props.onLeftIconClick?this.onLeftIconClick:null}
 				onRightIconClick={this.props.onRightIconClick?this.onRightIconClick:null}
 				style={this.props.style}

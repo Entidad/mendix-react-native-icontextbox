@@ -13,6 +13,8 @@ and so on.
 * Leading and trailing icon slots, each optional
 * Either icon can trigger an action, or stay purely decorative
 * Icon size and colour tuned independently per side
+* Binds to String, Decimal, Integer and Long attributes
+* Selectable keyboard type, matching the options on the standard Text Box
 * Full control of the input's type scale and spacing through styling
 * Works offline, on both iOS and Android
 
@@ -21,6 +23,9 @@ Studio Pro **11.12** or higher. Built against Mendix Pluggable Widgets Tools 11.
 (React 19, React Native 0.84).
 
 ## Version history
+
+**1.2.0** — added the `keyboardType` property and the On enter event; `value` now accepts
+Decimal, Integer and Long; renamed `onEnterAction` to `onSubmitAction`.
 
 **1.1.0** — added the `multiline` property and the On leave event.
 
@@ -46,15 +51,17 @@ The widget needs an entity context, so place it inside a **Data view** or a **Li
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
-| `value` | String attribute | yes | Holds the entered text. Written on every keystroke. |
+| `value` | String, Decimal, Integer or Long attribute | yes | Holds the entered value. Written on every keystroke. |
 | `placeholder` | Text template | no | Hint shown while the value is empty. Translatable. |
 | `multiline` | Boolean | yes (default `false`) | Let the text wrap and the field grow. |
+| `keyboardType` | Enumeration | yes (default `Default`) | Which on-screen keyboard to show. |
 | `returnKeyType` | Enum or String attribute | no | Label on the keyboard's return key. Falls back to `Done` when empty or unrecognised. |
 | `leftIcon` | Icon | no | Icon shown before the text. |
 | `rightIcon` | Icon | no | Icon shown after the text. |
+| `onFocusAction` | Action | no | Runs once when the field gains focus. |
 | `onChangeAction` | Action | no | Runs on every keystroke. |
 | `onLeaveAction` | Action | no | Runs once when the field loses focus. |
-| `onEnterAction` | Action | no | Runs when the keyboard return key is pressed. |
+| `onSubmitAction` | Action | no | Runs when the keyboard return key is pressed. |
 | `onLeftIconClick` | Action | no | Makes the leading icon tappable. |
 | `onRightIconClick` | Action | no | Makes the trailing icon tappable. |
 
@@ -66,6 +73,31 @@ non-editable input.
 **The attribute is written before the action runs**, so a nanoflow triggered by
 `onChangeAction` reads the text just typed rather than the previous value.
 
+**Numeric attributes are formatted and parsed by the platform.** The widget hands the raw
+text to the attribute's own formatter rather than converting anything itself, so a Decimal,
+Integer or Long attribute can be bound directly. The formatter applies the user's locale,
+which means the decimal separator is whatever that locale uses — a comma where a comma is
+expected.
+
+Pair a numeric attribute with a matching `keyboardType`: `Number pad` for Integer and Long,
+`Decimal pad` for Decimal.
+
+**Text that cannot be parsed is rejected silently.** Typing letters into a Decimal-bound
+field leaves the attribute at its previous value and records a validation message, but this
+widget does not render validation messages the way the standard Text Box does, so nothing
+appears on screen. Where invalid input is likely, choose a keyboard type that cannot produce
+it, or surface `validation` yourself elsewhere on the page.
+
+**A focused field shows what you typed, not the formatted value.** Once you start typing, the
+raw text stays exactly as entered; the formatted value reappears when the field loses focus.
+Without this a Decimal would reformat between keystrokes — typing `1234` would become `1,234`
+with the cursor thrown to the end.
+
+Until the first keystroke the field still tracks the attribute, so an **On enter** action that
+changes or clears the value takes effect on screen. Clearing a default `0` on focus, so the
+user does not have to delete it first, works for exactly this reason. After typing begins the
+entered text wins, and a value set by the model will not overwrite it mid-edit.
+
 **An icon is only tappable when its action is configured.** Without one it is decorative and
 taps fall through to the input, so tapping anywhere in the field still focuses it. Add an
 action and that icon becomes its own touch target.
@@ -76,11 +108,11 @@ queries a database or a service.
 
 For those, use one of the single-shot events instead. **`onLeaveAction` runs once when the
 field loses focus** — the same moment Mendix's own Text Box fires its On change — and
-**`onEnterAction` runs when the return key is pressed**. Wiring both covers the user who
+**`onSubmitAction` runs when the return key is pressed**. Wiring both covers the user who
 submits from the keyboard and the user who simply taps elsewhere.
 
 **`returnKeyType` only labels the key, it does not change behaviour.** Whichever label you
-pick, pressing the key fires `onEnterAction`. Set it to `Search` for a search field and
+pick, pressing the key fires `onSubmitAction`. Set it to `Search` for a search field and
 `Next` where the user moves on to another field — the label is a cue about what will happen,
 so it should match what your action actually does.
 
@@ -112,7 +144,7 @@ the *device's* language, from the value alone. A device set to Spanish shows `Bu
 surface the choice to a user yourself.
 
 **Multiline changes what the return key does.** With `multiline` on, pressing return inserts
-a newline and `onEnterAction` no longer fires — that is React Native behaviour, not a widget
+a newline and `onSubmitAction` no longer fires — that is React Native behaviour, not a widget
 limitation. Give the field a trailing icon wired to `onRightIconClick` so there is still a
 way to submit.
 

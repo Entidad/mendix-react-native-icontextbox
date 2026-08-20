@@ -37,6 +37,38 @@ const defaultStyle={
 };
 export class NativeIconTextBoxComponent extends Component{
 	styles=mergeNativeStyles(defaultStyle,this.props.style);
+	constructor(props){
+		super(props);
+		//text holds what the user has typed since focusing, or null when they have not typed
+		//yet. Only once it is set does it take over the display, which keeps a numeric
+		//attribute from reformatting mid-edit: typing "1234" into a Decimal would otherwise
+		//come back as "1,234" with the cursor thrown to the end.
+		this.state={editing:false,text:null};
+		this.onFocus=this.onFocus.bind(this);
+		this.onBlur=this.onBlur.bind(this);
+		this.onChangeText=this.onChangeText.bind(this);
+	}
+	onFocus(){
+		//Deliberately no snapshot of the current value. The field keeps rendering the
+		//attribute until the user types, so an On enter action that changes or clears the
+		//value is reflected. Capturing the value here would freeze whatever it was before
+		//that action ran.
+		this.setState({editing:true,text:null});
+		if(this.props.onEnter)this.props.onEnter();
+	}
+	onBlur(){
+		//Dropping back to displayValue lets the platform's formatting reappear.
+		this.setState({editing:false,text:null});
+		if(this.props.onLeave)this.props.onLeave();
+	}
+	onChangeText(text){
+		this.setState({text:text});
+		if(this.props.onChangeText)this.props.onChangeText(text);
+	}
+	displayed(){
+		if(this.state.editing&&this.state.text!=null)return this.state.text;
+		return this.props.value!=null?this.props.value:"";
+	}
 	//fontSize doubles as the icon size. A fallback keeps the icon visible if a style class
 	//supplies the key without one, rather than collapsing it to nothing.
 	iconSize(style){
@@ -73,13 +105,15 @@ export class NativeIconTextBoxComponent extends Component{
 				<TextInput
 					style={this.inputStyle()}
 					multiline={this.props.multiline}
-					value={this.props.value}
+					keyboardType={this.props.keyboardType||"default"}
+					value={this.displayed()}
 					placeholder={this.props.placeholder}
 					placeholderTextColor={this.styles.placeholderTextColor.color}
 					editable={this.props.editable}
-					onChangeText={this.props.onChangeText}
+					onChangeText={this.onChangeText}
+					onFocus={this.onFocus}
 					onSubmitEditing={this.props.onSubmit}
-					onBlur={this.props.onLeave}
+					onBlur={this.onBlur}
 					returnKeyType={this.props.returnKeyType||"done"}
 				/>
 				{this.renderIcon(this.props.rightIcon,this.styles.rightIcon,this.props.onRightIconClick)}

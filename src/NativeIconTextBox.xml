@@ -10,9 +10,12 @@
 		<propertyGroup caption="General">
 			<property key="value" type="attribute" required="true">
 				<caption>Value</caption>
-				<description>String attribute holding the entered text</description>
+				<description>Attribute holding the entered value. Numeric attributes are formatted and parsed by the platform, so pair them with a matching keyboard type.</description>
 				<attributeTypes>
 					<attributeType name="String"/>
+					<attributeType name="Decimal"/>
+					<attributeType name="Integer"/>
+					<attributeType name="Long"/>
 				</attributeTypes>
 			</property>
 			<property key="placeholder" type="textTemplate" required="false" multiline="false">
@@ -22,6 +25,18 @@
 			<property key="multiline" type="boolean" required="true" defaultValue="false">
 				<caption>Multiline</caption>
 				<description>Let the text wrap and the field grow. Cap the growth with maxHeight in styling. The return key inserts a newline instead of firing On submit.</description>
+			</property>
+			<property key="keyboardType" type="enumeration" required="true" defaultValue="default">
+				<caption>Keyboard type</caption>
+				<description>Which on-screen keyboard to show. Matches the options on the standard Text Box.</description>
+				<enumerationValues>
+					<enumerationValue key="numberPad">Number pad</enumerationValue>
+					<enumerationValue key="decimalPad">Decimal pad</enumerationValue>
+					<enumerationValue key="emailAddress">Email address</enumerationValue>
+					<enumerationValue key="phonePad">Phone pad</enumerationValue>
+					<enumerationValue key="url">URL</enumerationValue>
+					<enumerationValue key="default">Default</enumerationValue>
+				</enumerationValues>
 			</property>
 			<property key="returnKeyType" type="attribute" required="false">
 				<caption>Return key</caption>
@@ -46,6 +61,10 @@
 			</property>
 		</propertyGroup>
 		<propertyGroup caption="Events">
+			<property key="onFocusAction" type="action" required="false">
+				<caption>On enter</caption>
+				<description>Runs once when the field gains focus</description>
+			</property>
 			<property key="onChangeAction" type="action" required="false">
 				<caption>On change</caption>
 				<description>Runs on every keystroke</description>
@@ -54,7 +73,7 @@
 				<caption>On leave</caption>
 				<description>Runs once when the field loses focus</description>
 			</property>
-			<property key="onEnterAction" type="action" required="false">
+			<property key="onSubmitAction" type="action" required="false">
 				<caption>On submit</caption>
 				<description>Runs when the keyboard return key is pressed</description>
 			</property>
