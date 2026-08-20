@@ -59,6 +59,22 @@
 				<caption>Trailing icon</caption>
 				<description>Icon shown after the text</description>
 			</property>
+			<property key="expandedAttr" type="attribute" required="false">
+				<caption>Expanded</caption>
+				<description>Optional Boolean attribute the widget keeps in step with whether a multiline field has grown past one line. Bind conditional visibility to it to swap in a send control outside the widget when the icons step aside.</description>
+				<attributeTypes>
+					<attributeType name="Boolean"/>
+				</attributeTypes>
+			</property>
+			<property key="expandedIcons" type="enumeration" required="true" defaultValue="keep">
+				<caption>Icons when expanded</caption>
+				<description>What happens to the icons once a multiline field grows past one line. Hiding both gives the text full width, but leaves no way to submit inside the widget, so provide a send control beside it. Requires Multiline.</description>
+				<enumerationValues>
+					<enumerationValue key="keep">Keep both</enumerationValue>
+					<enumerationValue key="hideLeading">Hide leading</enumerationValue>
+					<enumerationValue key="hideBoth">Hide both</enumerationValue>
+				</enumerationValues>
+			</property>
 		</propertyGroup>
 		<propertyGroup caption="Events">
 			<property key="onFocusAction" type="action" required="false">

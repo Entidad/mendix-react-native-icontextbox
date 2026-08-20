@@ -24,7 +24,7 @@ Studio Pro **11.12** or higher. Built against Mendix Pluggable Widgets Tools 11.
 
 ## Version history
 
-**1.2.0** — added the `keyboardType` property and the On enter event; `value` now accepts
+**1.2.0** — added the `keyboardType`, `expandedIcons` and `expandedAttr` properties and the On enter event; `value` now accepts
 Decimal, Integer and Long; renamed `onEnterAction` to `onSubmitAction`.
 
 **1.1.0** — added the `multiline` property and the On leave event.
@@ -58,6 +58,8 @@ The widget needs an entity context, so place it inside a **Data view** or a **Li
 | `returnKeyType` | Enum or String attribute | no | Label on the keyboard's return key. Falls back to `Done` when empty or unrecognised. |
 | `leftIcon` | Icon | no | Icon shown before the text. |
 | `rightIcon` | Icon | no | Icon shown after the text. |
+| `expandedAttr` | Boolean attribute | no | Kept in step with whether the field has grown past one line. |
+| `expandedIcons` | Enumeration | yes (default `Keep both`) | What happens to the icons once a multiline field grows past one line. |
 | `onFocusAction` | Action | no | Runs once when the field gains focus. |
 | `onChangeAction` | Action | no | Runs on every keystroke. |
 | `onLeaveAction` | Action | no | Runs once when the field loses focus. |
@@ -163,20 +165,68 @@ input:{
 },
 ```
 
+**Icons can step out of the way once the field grows.** Set `expandedIcons` and, the moment a
+multiline field wraps past one line, the icons give the message its full width:
+
+| Value | Effect |
+| --- | --- |
+| Keep both | Icons stay put. The default. |
+| Hide leading | The leading icon goes, the trailing one remains. |
+| Hide both | Both go, and the text runs the full width of the field. |
+
+Expansion is measured from the field, not guessed from the text, and it **latches**: once
+expanded it stays expanded until the value is emptied or the field loses focus. Without that
+it would flicker, because hiding an icon widens the input, the text may then fit on one line
+again, and the icon would come back only to push it over once more.
+
+**`expandedAttr` publishes the expanded state to the page.** Bind a Boolean attribute and the
+widget keeps it in step, so conditional visibility elsewhere can react. That is what lets a
+send control appear outside the widget at the moment the icons step aside:
+
+- trailing icon visible, field on one line: the icon is the send control, via `onRightIconClick`
+- field expanded, icons hidden: the outside control takes over, shown when the attribute is true
+
+Binding it to visibility rather than to "the text is not empty" is what keeps the two from
+appearing at once. The attribute is written only when the state actually changes, and is left
+alone when it is read-only or not yet available.
+
+**Hide both leaves nothing inside the widget to submit with.** A multiline field ignores the
+return key for submitting — it inserts a newline — so with both icons gone there is no
+affordance left. Put a send control beside the widget rather than inside it, the way iMessage
+and Signal do, and wire it to your own action. The external button also keeps still while the
+field grows, instead of sliding down with it.
+
 **Icons render only when mapped.** An unmapped slot takes no space at all, so the same class
 works whether or not an icon is present.
 
 ### Styling
 
-The widget reads five style keys:
+The widget reads six style keys:
 
 | Key | Applied to |
 | --- | --- |
 | `container` | the row wrapping the icons and the input |
+| `containerExpanded` | layered over `container` while a multiline field is expanded |
 | `input` | the text input |
 | `leftIcon` | the leading icon |
 | `rightIcon` | the trailing icon |
 | `placeholderTextColor` | its `color` sets the placeholder colour |
+
+**`containerExpanded` reshapes the field once it grows.** It is empty by default, so nothing
+changes unless you set it. Pair it with `expandedIcons` to flatten the rounded ends when the
+icons step aside and the text takes the full width:
+
+```
+container:{
+        borderRadius:999,
+},
+containerExpanded:{
+        borderRadius:8,
+},
+```
+
+It follows the same latched expansion as the icons, so the shape settles once rather than
+changing back and forth as words wrap.
 
 **Icon size comes from `fontSize`,** matching how Mendix sizes icons elsewhere, so icons and
 text scale on the same numbers. The two sides are separate keys, so a small leading search

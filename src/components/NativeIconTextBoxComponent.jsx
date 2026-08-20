@@ -5,6 +5,8 @@ import{mergeNativeStyles}from"@mendix/pluggable-widgets-tools";
 //Icon size comes from fontSize so the icons scale with the same numbers as the text. Each
 //side has its own key, so a leading and trailing icon can differ in size and colour.
 const DEFAULT_ICON_SIZE=20;
+//Slack for font metric rounding, so a single line never reads as grown.
+const EXPAND_TOLERANCE=4;
 const defaultStyle={
 	container:{
 		flexDirection:"row",
@@ -14,6 +16,10 @@ const defaultStyle={
 		borderRadius:4,
 		backgroundColor:"#FFFFFF",
 		paddingHorizontal:12,
+	},
+	//Merged over container once a multiline field has expanded, so the field can change shape
+	//when the icons step aside. Empty by default, which leaves the shape unchanged.
+	containerExpanded:{
 	},
 	input:{
 		flex:1,
@@ -43,10 +49,55 @@ export class NativeIconTextBoxComponent extends Component{
 		//yet. Only once it is set does it take over the display, which keeps a numeric
 		//attribute from reformatting mid-edit: typing "1234" into a Decimal would otherwise
 		//come back as "1,234" with the cursor thrown to the end.
-		this.state={editing:false,text:null};
+		//expanded latches once the content grows past one line and only resets when the field
+		//empties or loses focus. Recomputing it from the measured height each time would
+		//oscillate: hiding the icons widens the input, the text may then fit on one line
+		//again, the icons return, and it wraps once more.
+		this.state={editing:false,text:null,expanded:false,baseHeight:null};
 		this.onFocus=this.onFocus.bind(this);
 		this.onBlur=this.onBlur.bind(this);
 		this.onChangeText=this.onChangeText.bind(this);
+		this.onContentSizeChange=this.onContentSizeChange.bind(this);
+	}
+	//The first measurement is the height of a single line, so anything meaningfully taller
+	//means the text has wrapped or a newline was entered.
+	onContentSizeChange(event){
+		if(!this.props.multiline)return;
+		const height=event&&event.nativeEvent&&event.nativeEvent.contentSize?event.nativeEvent.contentSize.height:null;
+		if(height==null)return;
+		const base=this.state.baseHeight==null?height:Math.min(this.state.baseHeight,height);
+		const grown=height>base+EXPAND_TOLERANCE;
+		if(base!==this.state.baseHeight||(grown&&!this.state.expanded)){
+			this.setState({baseHeight:base,expanded:this.state.expanded||grown});
+		}
+	}
+	componentDidMount(){
+		//A remount - a data view refreshed by the send action, for example - starts collapsed
+		//with no transition for componentDidUpdate to report. Publishing here clears a stale
+		//true that would otherwise leave an outside control on screen.
+		if(this.props.onExpandedChange)this.props.onExpandedChange(this.state.expanded);
+	}
+	componentDidUpdate(prevProps,prevState){
+		//Collapse when the model empties the value, which is what a send action does. Measured
+		//against the attribute rather than what is on screen: the typed text is still held in
+		//state at that moment, so the displayed value would not read as empty and the field
+		//would stay expanded. Clearing text too lets the emptied attribute show through.
+		if(this.state.expanded&&(this.props.value==null||this.props.value==="")){
+			this.setState({expanded:false,text:null});
+		}
+		//Reported from here rather than from each setState, so every route into the state -
+		//growing, emptying, blurring - publishes exactly once.
+		if(prevState.expanded!==this.state.expanded&&this.props.onExpandedChange){
+			this.props.onExpandedChange(this.state.expanded);
+		}
+	}
+	//Which icons survive once the field has expanded.
+	iconsHidden(){
+		if(!this.props.multiline||!this.state.expanded)return{leading:false,trailing:false};
+		const mode=this.props.expandedIcons;
+		if(mode=="hideBoth")return{leading:true,trailing:true};
+		if(mode=="hideLeading")return{leading:true,trailing:false};
+		return{leading:false,trailing:false};
 	}
 	onFocus(){
 		//Deliberately no snapshot of the current value. The field keeps rendering the
@@ -58,7 +109,7 @@ export class NativeIconTextBoxComponent extends Component{
 	}
 	onBlur(){
 		//Dropping back to displayValue lets the platform's formatting reappear.
-		this.setState({editing:false,text:null});
+		this.setState({editing:false,text:null,expanded:false});
 		if(this.props.onLeave)this.props.onLeave();
 	}
 	onChangeText(text){
@@ -92,6 +143,13 @@ export class NativeIconTextBoxComponent extends Component{
 		//taps meant for the input.
 		return onClick!=null?<Pressable onPress={onClick}>{glyph}</Pressable>:glyph;
 	}
+	//containerExpanded layers over container while the field is expanded, so a class can, for
+	//example, flatten the rounded ends once the icons are out of the way and the text is
+	//using the full width.
+	containerStyle(){
+		if(!this.props.multiline||!this.state.expanded)return this.styles.container;
+		return[this.styles.container,this.styles.containerExpanded];
+	}
 	//Android centres multiline text vertically by default, which leaves the first line adrift
 	//in a field that has room to grow. Anchoring to the top makes it fill downwards instead.
 	inputStyle(){
@@ -99,9 +157,10 @@ export class NativeIconTextBoxComponent extends Component{
 		return[this.styles.input,{textAlignVertical:"top"}];
 	}
 	render(){
+		const hidden=this.iconsHidden();
 		return(
-			<View style={this.styles.container}>
-				{this.renderIcon(this.props.leftIcon,this.styles.leftIcon,this.props.onLeftIconClick)}
+			<View style={this.containerStyle()}>
+				{hidden.leading?null:this.renderIcon(this.props.leftIcon,this.styles.leftIcon,this.props.onLeftIconClick)}
 				<TextInput
 					style={this.inputStyle()}
 					multiline={this.props.multiline}
@@ -112,11 +171,12 @@ export class NativeIconTextBoxComponent extends Component{
 					editable={this.props.editable}
 					onChangeText={this.onChangeText}
 					onFocus={this.onFocus}
+					onContentSizeChange={this.onContentSizeChange}
 					onSubmitEditing={this.props.onSubmit}
 					onBlur={this.onBlur}
 					returnKeyType={this.props.returnKeyType||"done"}
 				/>
-				{this.renderIcon(this.props.rightIcon,this.styles.rightIcon,this.props.onRightIconClick)}
+				{hidden.trailing?null:this.renderIcon(this.props.rightIcon,this.styles.rightIcon,this.props.onRightIconClick)}
 			</View>
 		);
 	}

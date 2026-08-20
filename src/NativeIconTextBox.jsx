@@ -27,6 +27,7 @@ export class NativeIconTextBox extends Component{
 		this.onSubmit=this.onSubmit.bind(this);
 		this.onLeave=this.onLeave.bind(this);
 		this.onFocus=this.onFocus.bind(this);
+		this.onExpandedChange=this.onExpandedChange.bind(this);
 		this.onLeftIconClick=this.onLeftIconClick.bind(this);
 		this.onRightIconClick=this.onRightIconClick.bind(this);
 	}
@@ -52,6 +53,15 @@ export class NativeIconTextBox extends Component{
 	}
 	onFocus(){
 		this.execute(this.props.onFocusAction);
+	}
+	//Published so the page can react - typically to swap in a send control once the widget
+	//icons have stepped aside. Written only on a real change, so an unchanged value never
+	//causes a needless round trip.
+	onExpandedChange(expanded){
+		const attr=this.props.expandedAttr;
+		if(!attr||attr.status!="available"||attr.readOnly)return;
+		if(attr.value===expanded)return;
+		attr.setValue(expanded);
 	}
 	onLeave(){
 		this.execute(this.props.onLeaveAction);
@@ -93,6 +103,8 @@ export class NativeIconTextBox extends Component{
 				returnKeyType={this.getReturnKeyType()}
 				leftIcon={this.resolve(this.props.leftIcon)}
 				rightIcon={this.resolve(this.props.rightIcon)}
+				expandedIcons={this.props.expandedIcons||"keep"}
+				onExpandedChange={this.onExpandedChange}
 				onChangeText={this.onChangeText}
 				onSubmit={this.onSubmit}
 				onLeave={this.onLeave}
