@@ -18,3 +18,5 @@ mendixProject
 **/tests/testProject
 **/artifacts
 test/NativeIconTextBoxTestApp/deployment
+test/NativeIconTextBoxTestApp/.mendix-cache
+test/NativeIconTextBoxTestApp/theme-cache
