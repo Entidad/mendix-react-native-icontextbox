@@ -24,8 +24,12 @@ Studio Pro **11.12** or higher. Built against Mendix Pluggable Widgets Tools 11.
 
 ## Version history
 
-**1.2.0** — added the `keyboardType`, `expandedIcons` and `expandedAttr` properties and the On enter event; `value` now accepts
-Decimal, Integer and Long; renamed `onEnterAction` to `onSubmitAction`.
+**1.3.0** — added the `decimalPrecision` and `groupDigits` properties, so a numeric attribute
+can be shown to a fixed number of decimal places.
+
+**1.2.0** — added the `keyboardType`, `expandedIcons` and `expandedAttr` properties and the On
+enter event; `value` now accepts Decimal, Integer and Long; renamed `onEnterAction` to
+`onSubmitAction`.
 
 **1.1.0** — added the `multiline` property and the On leave event.
 
@@ -54,6 +58,8 @@ The widget needs an entity context, so place it inside a **Data view** or a **Li
 | `value` | String, Decimal, Integer or Long attribute | yes | Holds the entered value. Written on every keystroke. |
 | `placeholder` | Text template | no | Hint shown while the value is empty. Translatable. |
 | `multiline` | Boolean | yes (default `false`) | Let the text wrap and the field grow. |
+| `decimalPrecision` | Integer | yes (default `-1`) | Decimal places to show on a numeric attribute. `-1` keeps the platform default. |
+| `groupDigits` | Boolean | yes (default `false`) | Show a thousands separator on a numeric attribute. |
 | `keyboardType` | Enumeration | yes (default `Default`) | Which on-screen keyboard to show. |
 | `returnKeyType` | Enum or String attribute | no | Label on the keyboard's return key. Falls back to `Done` when empty or unrecognised. |
 | `leftIcon` | Icon | no | Icon shown before the text. |
@@ -83,6 +89,20 @@ expected.
 
 Pair a numeric attribute with a matching `keyboardType`: `Number pad` for Integer and Long,
 `Decimal pad` for Decimal.
+
+**Trailing zeros come from formatting, not from the value.** `145` and `145.00` are the same
+number, so nothing stored in the attribute can carry the zeros and no nanoflow can add them —
+`parseDecimal('145.00')` yields 145. Set `decimalPrecision` to 2 and the widget reconfigures
+the attribute's own formatter, so 145 displays as 145.00. Because it is still Mendix's
+formatter, the decimal and grouping separators follow the user's locale.
+
+`decimalPrecision` and `groupDigits` apply only where a numeric attribute is bound; a String
+binding has no number formatter and is left untouched. At `-1` the platform's own formatting
+is kept.
+
+**The formatted value shows while the field is idle, not while typing.** Focus a field
+displaying `145.00` and that is the text you start editing, since the raw text and the
+formatted value only diverge once you type.
 
 **Text that cannot be parsed is rejected silently.** Typing letters into a Decimal-bound
 field leaves the attribute at its previous value and records a validation message, but this

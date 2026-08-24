@@ -1,0 +1,5 @@
+{
+  "nativeDependencies": {
+    "@sayem314/react-native-keep-awake": "1.4.0"
+  }
+}

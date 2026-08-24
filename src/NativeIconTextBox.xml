@@ -26,6 +26,14 @@
 				<caption>Multiline</caption>
 				<description>Let the text wrap and the field grow. Cap the growth with maxHeight in styling. The return key inserts a newline instead of firing On submit.</description>
 			</property>
+			<property key="decimalPrecision" type="integer" required="true" defaultValue="-1">
+				<caption>Decimal precision</caption>
+				<description>Number of decimal places to show on a numeric attribute, so 145 displays as 145.00 at a precision of 2. Leave at -1 to keep the platform's own formatting. Ignored for String attributes.</description>
+			</property>
+			<property key="groupDigits" type="boolean" required="true" defaultValue="false">
+				<caption>Group digits</caption>
+				<description>Show a thousands separator on a numeric attribute, so 1145 displays as 1,145. Ignored for String attributes.</description>
+			</property>
 			<property key="keyboardType" type="enumeration" required="true" defaultValue="default">
 				<caption>Keyboard type</caption>
 				<description>Which on-screen keyboard to show. Matches the options on the standard Text Box.</description>

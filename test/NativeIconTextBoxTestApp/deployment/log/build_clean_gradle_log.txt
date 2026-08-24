@@ -1,0 +1,36 @@
+Initialized native services in: C:\Users\jorge\.gradle\native
+Initialized jansi services in: C:\Users\jorge\.gradle\native
+Received JVM installation metadata from 'C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot': {JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot, JAVA_VERSION=21.0.11, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=21.0.11+10-LTS, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=21.0.11+10-LTS, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+The client will now receive all logging from the daemon (pid: 2132). The daemon log file: C:\Users\jorge\.gradle\daemon\8.5\daemon-2132.out.log
+Starting 2nd build in daemon [uptime: 21 mins 7.176 secs, performance: 99%, GC rate: 0.00/s, heap usage: 0% of 512 MiB, non-heap usage: 18% of 384 MiB]
+Using 6 worker leases.
+Now considering [C:\mx\widgets\mendix-react-native-icontextbox\test\NativeIconTextBoxTestApp\deployment, C:\mx\11\Unmio-mobile-main\vendorlib\temp] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'C:\mx\widgets\mendix-react-native-icontextbox\test\NativeIconTextBoxTestApp\deployment\settings.gradle'.
+Projects loaded. Root project using build file 'C:\mx\widgets\mendix-react-native-icontextbox\test\NativeIconTextBoxTestApp\deployment\build.gradle'.
+Included projects: [root project 'deployment']
+
+> Configure project :
+Evaluating root project 'deployment' using build file 'C:\mx\widgets\mendix-react-native-icontextbox\test\NativeIconTextBoxTestApp\deployment\build.gradle'.
+Compiling script 'C:\mx\widgets\mendix-react-native-icontextbox\test\NativeIconTextBoxTestApp\deployment\variables.gradle' using SubsetScriptTransformer.
+Compiling script 'C:\mx\widgets\mendix-react-native-icontextbox\test\NativeIconTextBoxTestApp\deployment\variables.gradle' using BuildScriptTransformer.
+All projects evaluated.
+Task name matched 'clean'
+Selected primary task 'clean' from project :
+Tasks to be executed: [task ':clean']
+Tasks that were excluded: []
+Resolve mutations for :clean (Thread[#143,included builds,5,main]) started.
+:clean (Thread[#143,included builds,5,main]) started.
+
+> Task :clean UP-TO-DATE
+Caching disabled for task ':clean' because:
+  Build cache is disabled
+Task ':clean' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+
+BUILD SUCCESSFUL in 5s
+1 actionable task: 1 up-to-date
+Watched directory hierarchies: []
+

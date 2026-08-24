@@ -1,7 +1,7 @@
 {
   "name": "icontextbox",
   "widgetName": "NativeIconTextBox",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Native text box with mappable leading and trailing icons",
   "copyright": "\u00a9 2026 Entidad. All Rights Reserved.",
   "author": "Jorge Flores",

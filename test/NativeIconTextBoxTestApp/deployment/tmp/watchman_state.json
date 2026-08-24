@@ -1,0 +1,13 @@
+{
+    "version": "4.9.4",
+    "watched": [
+        {
+            "triggers": [],
+            "path": "C:/mx/widgets/mendix-react-native-icontextbox"
+        },
+        {
+            "triggers": [],
+            "path": "C:/Program Files/Mendix/11.12.3/modeler/tools/node"
+        }
+    ]
+}

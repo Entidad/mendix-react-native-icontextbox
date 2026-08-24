@@ -1,0 +1,7 @@
+Name: @sayem314/react-native-keep-awake
+Version: 1.4.0
+License: MIT
+Private: false
+Description: Keep the screen from going to sleep. iOS, Android and Web.
+Repository: git+https://github.com/sayem314/react-native-keep-awake.git
+Homepage: https://github.com/sayem314/react-native-keep-awake

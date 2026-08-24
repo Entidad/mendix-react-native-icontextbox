@@ -31,6 +31,34 @@ export class NativeIconTextBox extends Component{
 		this.onLeftIconClick=this.onLeftIconClick.bind(this);
 		this.onRightIconClick=this.onRightIconClick.bind(this);
 	}
+	componentDidMount(){
+		this.applyNumberFormat();
+	}
+	componentDidUpdate(){
+		this.applyNumberFormat();
+	}
+	//Trailing zeros are not part of a decimal value - 145.00 and 145 are the same number - so
+	//they can only come from the formatter. Mendix supplies one per attribute; this reconfigures
+	//it rather than formatting by hand, which keeps the separators correct for the user's locale.
+	applyNumberFormat(){
+		const value=this.props.value;
+		if(!value||value.status!="available")return;
+		const formatter=value.formatter;
+		//Only numeric attributes carry a number formatter, so a String binding is left alone.
+		if(!formatter||formatter.type!="number"||typeof formatter.withConfig!="function")return;
+		const precision=this.props.decimalPrecision;
+		const config={
+			groupDigits:this.props.groupDigits===true,
+		};
+		//-1 means leave the platform default in place.
+		if(typeof precision=="number"&&precision>=0)config.decimalPrecision=precision;
+		//Applied once per configuration. Without this guard every render would install a new
+		//formatter, and each install re-renders.
+		const signature=config.groupDigits+"/"+(config.decimalPrecision==null?"default":config.decimalPrecision);
+		if(this.formatSignature===signature)return;
+		this.formatSignature=signature;
+		value.setFormatter(formatter.withConfig(config));
+	}
 	//An action only runs when it is configured, permitted, and not already running.
 	execute(action){
 		if(!action)return;
