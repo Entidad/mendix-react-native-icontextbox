@@ -1,5 +1,5 @@
 ## NativeIconTextBox
-Native text box with mappable leading and trailing icons
+Native text box with mappable leading and trailing icons or labels
 
 ## Features
 A text input for native pages that can carry an icon before the text, after it, or both.
@@ -10,19 +10,25 @@ The icons are mapped per instance, so the same widget covers a search field, a f
 clear button, a validated field with a status glyph, a password field with a reveal toggle,
 and so on.
 
-* Leading and trailing icon slots, each optional
+* Leading and trailing slots, each optional, holding an icon or a text label
 * Either icon can trigger an action, or stay purely decorative
-* Icon size and colour tuned independently per side
+* Labels are decoration only, so a numeric attribute keeps holding a plain number
+* Icon and label size and colour tuned independently per side
 * Binds to String, Decimal, Integer and Long attributes
 * Selectable keyboard type, matching the options on the standard Text Box
 * Full control of the input's type scale and spacing through styling
 * Works offline, on both iOS and Android
 
 ## Requirements
-Studio Pro **11.12** or higher. Built against Mendix Pluggable Widgets Tools 11.12
+Studio Pro **11.12** or higher. Built against Mendix Pluggable Widgets Tools 11.12.1
 (React 19, React Native 0.84).
 
 ## Version history
+
+**1.4.0** - added the `leftLabel` and `rightLabel` properties, so a slot can carry a decorative
+text label - a unit, a currency symbol - instead of an icon. Built against Pluggable Widgets
+Tools 11.12.1, which narrows its declared Node range to `^22.18.0`; see the development notes
+for how Node 24 is kept working.
 
 **1.3.0** — added the `decimalPrecision` and `groupDigits` properties, so a numeric attribute
 can be shown to a fixed number of decimal places.
@@ -62,10 +68,12 @@ The widget needs an entity context, so place it inside a **Data view** or a **Li
 | `groupDigits` | Boolean | yes (default `false`) | Show a thousands separator on a numeric attribute. |
 | `keyboardType` | Enumeration | yes (default `Default`) | Which on-screen keyboard to show. |
 | `returnKeyType` | Enum or String attribute | no | Label on the keyboard's return key. Falls back to `Done` when empty or unrecognised. |
-| `leftIcon` | Icon | no | Icon shown before the text. |
-| `rightIcon` | Icon | no | Icon shown after the text. |
+| `leftIcon` | Icon | no | Icon shown before the text. Ignored when `leftLabel` is set. |
+| `rightIcon` | Icon | no | Icon shown after the text. Ignored when `rightLabel` is set. |
+| `leftLabel` | Text template | no | Decorative text shown before the value. Takes the slot from `leftIcon`. Translatable. |
+| `rightLabel` | Text template | no | Decorative text shown after the value, such as a unit. Takes the slot from `rightIcon`. Translatable. |
 | `expandedAttr` | Boolean attribute | no | Kept in step with whether the field has grown past one line. |
-| `expandedIcons` | Enumeration | yes (default `Keep both`) | What happens to the icons once a multiline field grows past one line. |
+| `expandedIcons` | Enumeration | yes (default `Keep both`) | What happens to the icons and labels once a multiline field grows past one line. |
 | `onFocusAction` | Action | no | Runs once when the field gains focus. |
 | `onChangeAction` | Action | no | Runs on every keystroke. |
 | `onLeaveAction` | Action | no | Runs once when the field loses focus. |
@@ -123,6 +131,23 @@ entered text wins, and a value set by the model will not overwrite it mid-edit.
 **An icon is only tappable when its action is configured.** Without one it is decorative and
 taps fall through to the input, so tapping anywhere in the field still focuses it. Add an
 action and that icon becomes its own touch target.
+
+**A label is decoration, never part of the value.** It renders as a sibling of the input, not
+inside it, so a field showing `30` beside a trailing `min` still holds the integer 30. Nothing
+about it reaches `setTextValue`, the attribute's formatter or the platform's parsing -
+`decimalPrecision` and `groupDigits` keep formatting the number alone, and the label sits
+outside what they see. Use it for a unit of measure, a currency symbol, a domain suffix:
+anything the user should read but the model should not store.
+
+**A label takes the slot from the icon on its side.** Map both and the label wins, and the icon
+is not rendered at all. The two sides are independent, so a leading search glyph can sit
+opposite a trailing label.
+
+**Tapping a label focuses the field.** A label occupies space inside the border that the input
+does not cover, so without this a tap on it would land on nothing and that corner of the field
+would feel dead. Forwarding focus is all it does: a label is not a touch target you can wire an
+action to, and `onLeftIconClick` and `onRightIconClick` stay icon-only. Screen readers announce
+it as text rather than as a button, which is what it is.
 
 **`onChangeAction` fires on every keystroke.** Typing a six-letter word runs the nanoflow six
 times, which suits live filtering of a list already in memory but is wasteful when the action
@@ -216,12 +241,13 @@ affordance left. Put a send control beside the widget rather than inside it, the
 and Signal do, and wire it to your own action. The external button also keeps still while the
 field grows, instead of sliding down with it.
 
-**Icons render only when mapped.** An unmapped slot takes no space at all, so the same class
-works whether or not an icon is present.
+**Icons and labels render only when mapped.** An unmapped slot takes no space at all, so the
+same class works whether or not the slot is filled. An empty label counts as unmapped, so a
+text template that resolves to nothing leaves no gap behind.
 
 ### Styling
 
-The widget reads six style keys:
+The widget reads eight style keys:
 
 | Key | Applied to |
 | --- | --- |
@@ -230,6 +256,8 @@ The widget reads six style keys:
 | `input` | the text input |
 | `leftIcon` | the leading icon |
 | `rightIcon` | the trailing icon |
+| `leftLabel` | the leading label |
+| `rightLabel` | the trailing label |
 | `placeholderTextColor` | its `color` sets the placeholder colour |
 
 **`containerExpanded` reshapes the field once it grows.** It is empty by default, so nothing
@@ -255,6 +283,26 @@ back to 20 rather than disappearing.
 
 Any other property on `leftIcon`/`rightIcon` — `marginRight`, `padding` and so on — is applied
 to the wrapper around the glyph, so spacing is set in the same place as size.
+
+**A label is styled as text, not as an icon.** The whole key goes to the label, so `fontSize`,
+`color`, `fontWeight`, `letterSpacing` and the margins are all set in one place - there is no
+split between glyph and wrapper the way there is for icons. The default is 14, a little under
+the input's 16, which is what makes a unit read as an annotation rather than as part of the
+number. Match `input.fontSize` instead where the label is meant to read as an equal, as a
+currency symbol usually is.
+
+```
+input:{
+        flex:1,
+        fontSize:16,
+        paddingVertical:12,
+},
+rightLabel:{
+        fontSize:14,
+        color:"#808080",
+        marginLeft:8,
+},
+```
 
 **Larger text and spacing** are controlled from `input` and `container`. Raise `input.fontSize`
 for type scale, `input.paddingVertical` for field height, and `container.paddingHorizontal`
@@ -373,7 +421,17 @@ None at this time
 
 ## Development and contribution
 
-1. Install NPM package dependencies by using: `npm install`. Node 20.19.4 or higher is required.
+1. Install NPM package dependencies by using: `npm install`. Node **22.18.0 or higher** is
+   required, Node 24 included.
+
+   Pluggable Widgets Tools 11.12.1 declares `engines.node` as `^22.18.0` and its own preflight
+   check exits before running any script when the installed Node falls outside that range, so
+   Node 24 is refused outright. The build itself is fine on 24 - only the declared range
+   objects - so `scripts/relax-tools-node-range.js` widens the ceiling to `>=22.18.0` while
+   keeping the 22.18 floor. It runs from `postinstall`, because `npm install` rewrites the file
+   it edits, and it is deliberately narrow: it patches that exact range and nothing else, so a
+   different range in a later version is left in place to be read rather than silently
+   overridden.
 1. Run `npm start` to watch for code changes. On every change:
     - the widget will be bundled;
     - the bundle will be included in a `dist` folder in the root directory of the project;

@@ -131,6 +131,8 @@ export class NativeIconTextBox extends Component{
 				returnKeyType={this.getReturnKeyType()}
 				leftIcon={this.resolve(this.props.leftIcon)}
 				rightIcon={this.resolve(this.props.rightIcon)}
+				leftLabel={this.resolve(this.props.leftLabel)}
+				rightLabel={this.resolve(this.props.rightLabel)}
 				expandedIcons={this.props.expandedIcons||"keep"}
 				onExpandedChange={this.onExpandedChange}
 				onChangeText={this.onChangeText}

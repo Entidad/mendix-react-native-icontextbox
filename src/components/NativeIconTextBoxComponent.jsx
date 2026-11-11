@@ -1,5 +1,5 @@
 import{Component}from"react";
-import{View,TextInput,Pressable,StyleSheet}from"react-native";
+import{View,Text,TextInput,Pressable,StyleSheet}from"react-native";
 import{Icon}from"mendix/components/native/Icon";
 import{mergeNativeStyles}from"@mendix/pluggable-widgets-tools";
 //Icon size comes from fontSize so the icons scale with the same numbers as the text. Each
@@ -37,6 +37,18 @@ const defaultStyle={
 		color:"#6C717C",
 		marginLeft:8,
 	},
+	//Labels sit a little under the input text by default, so a unit beside a value reads as an
+	//annotation rather than as part of the number.
+	leftLabel:{
+		fontSize:14,
+		color:"#6C717C",
+		marginRight:8,
+	},
+	rightLabel:{
+		fontSize:14,
+		color:"#6C717C",
+		marginLeft:8,
+	},
 	placeholderTextColor:{
 		color:"#9DA1A8",
 	},
@@ -54,10 +66,22 @@ export class NativeIconTextBoxComponent extends Component{
 		//oscillate: hiding the icons widens the input, the text may then fit on one line
 		//again, the icons return, and it wraps once more.
 		this.state={editing:false,text:null,expanded:false,baseHeight:null};
+		this.input=null;
 		this.onFocus=this.onFocus.bind(this);
 		this.onBlur=this.onBlur.bind(this);
 		this.onChangeText=this.onChangeText.bind(this);
 		this.onContentSizeChange=this.onContentSizeChange.bind(this);
+		this.setInput=this.setInput.bind(this);
+		this.focusInput=this.focusInput.bind(this);
+	}
+	//Held so a tap on a label can hand focus to the input. A label occupies space inside the
+	//border that the input does not cover, so without this a tap on it would land on nothing
+	//and the field would read as dead in that corner.
+	setInput(ref){
+		this.input=ref;
+	}
+	focusInput(){
+		if(this.props.editable&&this.input!=null)this.input.focus();
 	}
 	//The first measurement is the height of a single line, so anything meaningfully taller
 	//means the text has wrapped or a newline was entered.
@@ -91,8 +115,9 @@ export class NativeIconTextBoxComponent extends Component{
 			this.props.onExpandedChange(this.state.expanded);
 		}
 	}
-	//Which icons survive once the field has expanded.
-	iconsHidden(){
+	//Which adornments survive once the field has expanded. A label follows the same rule as the
+	//icon on its side, so a slot clears out whichever of the two is occupying it.
+	adornmentsHidden(){
 		if(!this.props.multiline||!this.state.expanded)return{leading:false,trailing:false};
 		const mode=this.props.expandedIcons;
 		if(mode=="hideBoth")return{leading:true,trailing:true};
@@ -143,6 +168,28 @@ export class NativeIconTextBoxComponent extends Component{
 		//taps meant for the input.
 		return onClick!=null?<Pressable onPress={onClick}>{glyph}</Pressable>:glyph;
 	}
+	//Strictly decorative: the label is a sibling of the input and never part of its value, so a
+	//field reading 30 min still holds the integer 30. The Pressable forwards focus and nothing
+	//else - accessible={false} keeps it off the screen reader as a button, while the Text inside
+	//is still announced as the text it is.
+	renderLabel(label,style){
+		if(label==null||label==="")return null;
+		return(
+			<Pressable onPress={this.focusInput} accessible={false}>
+				<Text style={style}>{label}</Text>
+			</Pressable>
+		);
+	}
+	//A label takes the slot from the icon on its side rather than sitting beside it, so the
+	//field carries at most one adornment per side however both are mapped.
+	renderLeading(){
+		const label=this.renderLabel(this.props.leftLabel,this.styles.leftLabel);
+		return label!=null?label:this.renderIcon(this.props.leftIcon,this.styles.leftIcon,this.props.onLeftIconClick);
+	}
+	renderTrailing(){
+		const label=this.renderLabel(this.props.rightLabel,this.styles.rightLabel);
+		return label!=null?label:this.renderIcon(this.props.rightIcon,this.styles.rightIcon,this.props.onRightIconClick);
+	}
 	//containerExpanded layers over container while the field is expanded, so a class can, for
 	//example, flatten the rounded ends once the icons are out of the way and the text is
 	//using the full width.
@@ -157,11 +204,12 @@ export class NativeIconTextBoxComponent extends Component{
 		return[this.styles.input,{textAlignVertical:"top"}];
 	}
 	render(){
-		const hidden=this.iconsHidden();
+		const hidden=this.adornmentsHidden();
 		return(
 			<View style={this.containerStyle()}>
-				{hidden.leading?null:this.renderIcon(this.props.leftIcon,this.styles.leftIcon,this.props.onLeftIconClick)}
+				{hidden.leading?null:this.renderLeading()}
 				<TextInput
+					ref={this.setInput}
 					style={this.inputStyle()}
 					multiline={this.props.multiline}
 					keyboardType={this.props.keyboardType||"default"}
@@ -176,7 +224,7 @@ export class NativeIconTextBoxComponent extends Component{
 					onBlur={this.onBlur}
 					returnKeyType={this.props.returnKeyType||"done"}
 				/>
-				{hidden.trailing?null:this.renderIcon(this.props.rightIcon,this.styles.rightIcon,this.props.onRightIconClick)}
+				{hidden.trailing?null:this.renderTrailing()}
 			</View>
 		);
 	}

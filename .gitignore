@@ -20,3 +20,4 @@ mendixProject
 test/NativeIconTextBoxTestApp/deployment
 test/NativeIconTextBoxTestApp/.mendix-cache
 test/NativeIconTextBoxTestApp/theme-cache
+**/project-settings.user.json
